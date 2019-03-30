@@ -1,0 +1,13 @@
+#:kivy 1.10.1
+
+<FileChooserPopup>:
+    orientation: 'vertical'
+    Button:
+        text: 'OK'
+        size_hint_y: 0.1
+        on_release: root.select()
+    FileChooserListView:
+        size_hint_y: 0.9
+        id: filechooser
+        filters: ['*.mp3']
+        path: root.path_

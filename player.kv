@@ -1,0 +1,70 @@
+#:kivy 1.10.1
+#: import icon kivy.garden.iconfonts.icon
+
+<PlayerLayout>:
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: 0.2
+        Label:
+            font_size: sp(20)
+            text: 'audio player'
+            size_hint_x: 0.7
+        Button:
+            text: 'Select'
+            size_hint_x: 0.3
+            on_release: root.parent.open_file()
+    BoxLayout
+        orientation: 'horizontal'
+        size_hint_y: 0.2
+        Button:
+            id: _play
+            markup: True
+            size_hint_x: 0.1
+            text: "%s"%(icon('fa-play', 64))
+            on_release: root.play()
+        Button:
+            id: _pause
+            markup: True
+            size_hint_x: 0.1
+            text: "%s"%(icon('fa-pause', 64))
+            on_release: root.pause()
+        Button:
+            id: _stop
+            markup: True
+            size_hint_x: 0.1
+            text: "%s"%(icon('fa-stop', 64))
+            on_release: root.stop()
+    Label:
+        size_hint_y: 0.2
+        id: file_name
+        font_size: sp(16)
+        text: root.file_name
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: 0.4
+        Button:
+            markup: True
+            size_hint_x: 0.15
+            text: "%s"%(icon('fa-backward', 64))
+            on_release: root.rev(60)
+        Button:
+            markup: True
+            size_hint_x: 0.15
+            text: "%s"%(icon('fa-caret-left', 64))
+            on_release: root.rev(10)
+        Label:
+            size_hint_x: 0.4
+            font_size: sp(32)
+            id: position
+            text: root.pos_str
+        Button:
+            markup: True
+            size_hint_x: 0.15
+            text: '%s'%(icon('fa-caret-right', 64))
+            on_release: root.ff(10)
+        Button:
+            markup: True
+            size_hint_x: 0.15
+            text: '%s'%(icon('fa-forward', 64))
+            on_release: root.ff(60)
