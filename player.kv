@@ -53,11 +53,19 @@
             size_hint_x: 0.15
             text: "%s"%(icon('fa-caret-left', 64))
             on_release: root.rev(10)
-        Label:
+        BoxLayout:
+            orientation: 'vertical'
             size_hint_x: 0.4
-            font_size: sp(32)
-            id: position
-            text: root.pos_str
+            Label:
+                size_hint_y: 0.6
+                font_size: sp(32)
+                id: position
+                text: root.pos_str
+            Label:
+                size_hint_y: 0.4
+                font_size: sp(18)
+                id: length
+                text: root.track_len
         Button:
             markup: True
             size_hint_x: 0.15
