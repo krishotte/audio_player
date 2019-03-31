@@ -9,14 +9,31 @@
         Label:
             font_size: sp(20)
             text: 'audio player'
-            size_hint_x: 0.7
+            size_hint_x: 0.6
         Button:
-            text: 'Select'
-            size_hint_x: 0.3
+            markup: True
+            text: "%s"%(icon('fa-folder-open', 64))  # 'Select'
+            size_hint_x: 0.2
             on_release: root.parent.open_file()
+        Label:
+            size_hint_x: 0.025
+        Button:
+            id: _overwrite_position
+            markup: True
+            text: "%s"%(icon('fa-download', 64))
+            size_hint_x: 0.2
+            on_release: root.overwrite_saved_pos()
     BoxLayout
         orientation: 'horizontal'
         size_hint_y: 0.2
+        Button:
+            id: _jump_to_saved
+            markup: True
+            size_hint_x: 0.1
+            text: "%s"%(icon('fa-undo-alt', 64))
+            on_release: root.goto_saved_pos()
+        Label:
+            size_hint_x: 0.01
         Button:
             id: _play
             markup: True
@@ -40,6 +57,10 @@
         id: file_name
         font_size: sp(16)
         text: root.file_name
+        text_size: self.size
+        valign: 'middle'
+        halign: 'center'
+        padding: (sp(8), sp(8))
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: 0.4
@@ -47,12 +68,12 @@
             markup: True
             size_hint_x: 0.15
             text: "%s"%(icon('fa-backward', 64))
-            on_release: root.rev(60)
+            on_release: root.rev(root.big_step)
         Button:
             markup: True
             size_hint_x: 0.15
             text: "%s"%(icon('fa-caret-left', 64))
-            on_release: root.rev(10)
+            on_release: root.rev(root.small_step)
         BoxLayout:
             orientation: 'vertical'
             size_hint_x: 0.4
@@ -70,9 +91,9 @@
             markup: True
             size_hint_x: 0.15
             text: '%s'%(icon('fa-caret-right', 64))
-            on_release: root.ff(10)
+            on_release: root.ff(root.small_step)
         Button:
             markup: True
             size_hint_x: 0.15
             text: '%s'%(icon('fa-forward', 64))
-            on_release: root.ff(60)
+            on_release: root.ff(root.big_step)

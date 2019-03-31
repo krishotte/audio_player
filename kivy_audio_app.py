@@ -4,7 +4,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, NumericProperty
 from kivy.clock import Clock
 #from kivy.garden import iconfonts
 import kivy.garden.iconfonts
@@ -29,13 +29,20 @@ class PlayerLayout(BoxLayout):
     pos_str = StringProperty()
     file_name = StringProperty()
     track_len = StringProperty()
+    small_step = NumericProperty()
+    big_step = NumericProperty()
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
         self.file_name = ''
+        self.progress_file = ''
         self.sound = None
         self.scheduled_job1 = None
         self.scheduled_job2 = None
+        self.small_step = kwargs['small_step']
+        self.big_step = kwargs['big_step']
+        self.ini = Ini2()
+        self.pos_int = 0
 
     def rev(self, step):
         print('rev, step :', -step)
@@ -61,9 +68,10 @@ class PlayerLayout(BoxLayout):
     def play(self):
         # app1.sound.play()
         if self.sound is not None:
+            self._read_progress()
             self.sound.play()
             self.scheduled_job1 = Clock.schedule_interval(self._get_position, 1)
-            self.scheduled_job2 = Clock.schedule_interval(self._save_progress, 10)
+            self.scheduled_job2 = Clock.schedule_interval(self._save_progress, 4)
             self.track_len = self._time_int_to_str(self.sound.length)
             print(' track length: ', self.track_len)
         else:
@@ -83,14 +91,51 @@ class PlayerLayout(BoxLayout):
         # app1.sound.seek(0)
         self.sound.stop()
         self.sound.seek(0)
+        self.pos_int = 0
         Clock.unschedule(self.scheduled_job1)
+        Clock.unschedule(self.scheduled_job2)
 
     def _save_progress(self, *args):
         """
         saves last position to json file
+        only when actual position > progress saved
         :return: True on success
         TODO
         """
+        self.progress_file = path.splitext(self.file_name)[0] + '.json'
+        try:
+            progress = self.ini.read(self.progress_file)['pos_int']
+        except KeyError:
+            print('progress not saved')
+            progress = self.pos_int
+            print('saving progress', self.pos_int)
+            self.ini.write(self.progress_file, {'pos_int':self.pos_int})
+        if self.pos_int > progress:
+            self.ini.write(self.progress_file, {'pos_int': self.pos_int})
+            print('saving progress', self.pos_int)
+        else:
+            print('pos_int < progress, not saving progress')
+
+    def _read_progress(self):
+        print('reading saved progress')
+        #if self.progress_file != '':
+        #    pass
+        #else:
+        self.progress_file = path.splitext(self.file_name)[0] + '.json'
+        try:
+            saved_progress = self.ini.read(self.progress_file)['pos_int']
+            print('seeking to saved progress')
+            self.sound.seek(saved_progress)
+        except KeyError:
+            print('progress not saved')
+
+    def goto_saved_pos(self):
+        print('going to saved position')
+        self._read_progress()
+
+    def overwrite_saved_pos(self):
+        print('overwriting saved position by current')
+        self.ini.write(self.progress_file, {'pos_int': self.pos_int})
         print('saving progress', self.pos_int)
 
 
@@ -104,8 +149,8 @@ class FileChooserPopup(BoxLayout):
 
 class MainLayout(FloatLayout):
     def __init__(self, config_dir):
-        # TODO: send step config to PlayerLayout
-        self.player_layout = PlayerLayout()
+        # TODO_: send step config to PlayerLayout
+
         self.file_select_layout = FileChooserPopup()
         super().__init__()
 
@@ -119,13 +164,16 @@ class MainLayout(FloatLayout):
             'big_step': 150,
         }
 
-        loaded_config = self.ini.read(path.join(path.dirname(path.realpath(__name__)), 'config.json'))
+        loaded_config = self.ini.read(path.join(self.config_dir, 'config.json'))
+        print('loaded config: ', loaded_config)
 
         if not loaded_config:
+            print('not loaded config', not loaded_config)
             self.ini.write(path.join(self.config_dir, 'config.json'), default_config)
             print('writing default config into config.json')
 
         self.configuration = {**default_config, **loaded_config}
+        self.player_layout = PlayerLayout(**self.configuration)
 
         if self.configuration['last_file'] != '':
             self.add_widget(self.player_layout)
@@ -168,13 +216,6 @@ class AudioPlayer(App):
         # print('audio libs loaded: ', libs_loaded)
 
     def build(self):
-        # file_name = 'Siddharta - Na soncu.mp3'
-        # path_to_file = path.join(self.data_dir, file_name)
-        # print('loading file: ', path_to_file)
-        # self.sound = SoundLoader.load(path_to_file)
-        # self.sound.play()
-        # # self.main_layout = MainLayout(file_name)
-        # Clock.schedule_interval(self.main_layout._get_position, 1)
         return self.main_layout
 
 
