@@ -7,12 +7,12 @@
         orientation: 'horizontal'
         size_hint_y: 0.2
         Label:
-            font_size: sp(20)
+            font_size: sp(20 * root.font_scale)
             text: 'audio player'
             size_hint_x: 0.6
         Button:
             markup: True
-            text: "%s"%(icon('fa-folder-open', 64))  # 'Select'
+            text: "%s"%(icon('fa-folder-open', root.icon_size))  # 'Select'
             size_hint_x: 0.2
             on_release: root.parent.open_file()
         Label:
@@ -20,7 +20,7 @@
         Button:
             id: _overwrite_position
             markup: True
-            text: "%s"%(icon('fa-download', 64))
+            text: "%s"%(icon('fa-download', root.icon_size))
             size_hint_x: 0.2
             on_release: root.overwrite_saved_pos()
     BoxLayout
@@ -30,7 +30,7 @@
             id: _jump_to_saved
             markup: True
             size_hint_x: 0.1
-            text: "%s"%(icon('fa-undo-alt', 64))
+            text: "%s"%(icon('fa-undo-alt', root.icon_size))
             on_release: root.goto_saved_pos()
         Label:
             size_hint_x: 0.01
@@ -38,24 +38,24 @@
             id: _play
             markup: True
             size_hint_x: 0.1
-            text: "%s"%(icon('fa-play', 64))
+            text: "%s"%(icon('fa-play', root.icon_size))
             on_release: root.play()
         Button:
             id: _pause
             markup: True
             size_hint_x: 0.1
-            text: "%s"%(icon('fa-pause', 64))
+            text: "%s"%(icon('fa-pause', root.icon_size))
             on_release: root.pause()
         Button:
             id: _stop
             markup: True
             size_hint_x: 0.1
-            text: "%s"%(icon('fa-stop', 64))
+            text: "%s"%(icon('fa-stop', root.icon_size))
             on_release: root.stop()
     Label:
         size_hint_y: 0.2
         id: file_name
-        font_size: sp(16)
+        font_size: sp(20 * root.font_scale)
         text: root.file_name
         text_size: self.size
         valign: 'middle'
@@ -67,33 +67,33 @@
         Button:
             markup: True
             size_hint_x: 0.15
-            text: "%s"%(icon('fa-backward', 64))
+            text: "%s"%(icon('fa-backward', root.icon_size))
             on_release: root.rev(root.big_step)
         Button:
             markup: True
             size_hint_x: 0.15
-            text: "%s"%(icon('fa-caret-left', 64))
+            text: "%s"%(icon('fa-caret-left', root.icon_size))
             on_release: root.rev(root.small_step)
         BoxLayout:
             orientation: 'vertical'
             size_hint_x: 0.4
             Label:
                 size_hint_y: 0.6
-                font_size: sp(32)
+                font_size: sp(32 * root.font_scale)
                 id: position
                 text: root.pos_str
             Label:
                 size_hint_y: 0.4
-                font_size: sp(18)
+                font_size: sp(18 * root.font_scale)
                 id: length
                 text: root.track_len
         Button:
             markup: True
             size_hint_x: 0.15
-            text: '%s'%(icon('fa-caret-right', 64))
+            text: '%s'%(icon('fa-caret-right', root.icon_size))
             on_release: root.ff(root.small_step)
         Button:
             markup: True
             size_hint_x: 0.15
-            text: '%s'%(icon('fa-forward', 64))
+            text: '%s'%(icon('fa-forward', root.icon_size))
             on_release: root.ff(root.big_step)

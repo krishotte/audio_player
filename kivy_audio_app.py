@@ -31,6 +31,8 @@ class PlayerLayout(BoxLayout):
     track_len = StringProperty()
     small_step = NumericProperty()
     big_step = NumericProperty()
+    icon_size = NumericProperty()
+    font_scale = NumericProperty()
 
     def __init__(self, **kwargs):
         super().__init__()
@@ -41,6 +43,8 @@ class PlayerLayout(BoxLayout):
         self.scheduled_job2 = None
         self.small_step = kwargs['small_step']
         self.big_step = kwargs['big_step']
+        self.icon_size = kwargs['icon_size']
+        self.font_scale = kwargs['font_scale']
         self.ini = Ini2()
         self.pos_int = 0
 
@@ -73,6 +77,7 @@ class PlayerLayout(BoxLayout):
             self.scheduled_job1 = Clock.schedule_interval(self._get_position, 1)
             self.scheduled_job2 = Clock.schedule_interval(self._save_progress, 4)
             self.track_len = self._time_int_to_str(self.sound.length)
+            self.parent.update_last_file(self.file_name)
             print(' track length: ', self.track_len)
         else:
             print('self sound is None')
@@ -150,7 +155,8 @@ class FileChooserPopup(BoxLayout):
 class MainLayout(FloatLayout):
     def __init__(self, config_dir):
         # TODO_: send step config to PlayerLayout
-
+        # TODO_: icon size into config.json
+        # TODO_: font scaling into config.json
         self.file_select_layout = FileChooserPopup()
         super().__init__()
 
@@ -162,6 +168,8 @@ class MainLayout(FloatLayout):
             'last_file': '',
             'small_step': 20,
             'big_step': 150,
+            'icon_size': 48,
+            'font_scale': 1,
         }
 
         loaded_config = self.ini.read(path.join(self.config_dir, 'config.json'))
@@ -176,7 +184,8 @@ class MainLayout(FloatLayout):
         self.player_layout = PlayerLayout(**self.configuration)
 
         if self.configuration['last_file'] != '':
-            self.add_widget(self.player_layout)
+            # self.add_widget(self.player_layout)
+            self.return_to_player(self.configuration['last_file'])
         else:
             self.add_widget(self.file_select_layout)
 
@@ -191,6 +200,11 @@ class MainLayout(FloatLayout):
         self.player_layout.sound = SoundLoader.load(file_name)
         self.remove_widget(self.file_select_layout)
         self.add_widget(self.player_layout)
+
+    def update_last_file(self, file_name):
+        print('updating last_file in config.json')
+        self.configuration['last_file'] = file_name
+        self.ini.write(path.join(self.config_dir, 'config.json'), self.configuration)
 
 
 class AudioPlayer(App):
