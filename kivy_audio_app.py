@@ -1,18 +1,19 @@
+import file_sort
 from kivy.core.audio import SoundLoader
-import time
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import StringProperty, NumericProperty
+from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from kivy.clock import Clock
-#from kivy.garden import iconfonts
 import kivy.garden.iconfonts
 from datetime import datetime
 from os import path, mkdir
 from kivy.utils import platform
 from kivy.core import core_register_libs
 from m_file import Ini2
+if platform == 'android':
+    import kivy_audio_android
 # using ffpyplayer
 
 kv_files = ['player.kv', 'file_selector.kv']
@@ -146,10 +147,23 @@ class PlayerLayout(BoxLayout):
 
 class FileChooserPopup(BoxLayout):
     path_ = StringProperty('C:\\Users\\pkrssak\\AppData\\Roaming\\podcast_downloader')
+    sort_func_ = ObjectProperty(file_sort.alphanumeric_folders_first_reversed)
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        if kwargs['file_sort'] == 'date-reversed':
+            self.sort_func_ = file_sort.date_reversed
+            print('using date-reversed file ordering')
+        else:
+            self.sort_func_ = file_sort.alphanumeric_folders_first_reversed
+            print('using alphanumeric file ordering')
 
     def select(self):
         print('selected: ', self.ids.filechooser.selection)
-        self.parent.return_to_player(self.ids.filechooser.selection[0])
+        if self.ids.filechooser.selection:
+            self.parent.return_to_player(self.ids.filechooser.selection[0])
+        else:
+            print('nothing selected')
 
 
 class MainLayout(FloatLayout):
@@ -157,7 +171,6 @@ class MainLayout(FloatLayout):
         # TODO_: send step config to PlayerLayout
         # TODO_: icon size into config.json
         # TODO_: font scaling into config.json
-        self.file_select_layout = FileChooserPopup()
         super().__init__()
 
         self.config_dir = config_dir
@@ -170,6 +183,7 @@ class MainLayout(FloatLayout):
             'big_step': 150,
             'icon_size': 48,
             'font_scale': 1,
+            'file_sort': '',
         }
 
         loaded_config = self.ini.read(path.join(self.config_dir, 'config.json'))
@@ -182,6 +196,7 @@ class MainLayout(FloatLayout):
 
         self.configuration = {**default_config, **loaded_config}
         self.player_layout = PlayerLayout(**self.configuration)
+        self.file_select_layout = FileChooserPopup(**self.configuration)
 
         if self.configuration['last_file'] != '':
             # self.add_widget(self.player_layout)
