@@ -1,4 +1,5 @@
 import file_sort
+import kivy
 from kivy.core.audio import SoundLoader
 from kivy.app import App
 from kivy.lang import Builder
@@ -66,8 +67,11 @@ class PlayerLayout(BoxLayout):
         # print(self.pos_str)
 
     def _time_int_to_str(self, time_int):
-        time = datetime.utcfromtimestamp(time_int)
-        str_ = f'{str(time.hour).zfill(2)}:{str(time.minute).zfill(2)}:{str(time.second).zfill(2)}'
+        try:
+            time = datetime.utcfromtimestamp(time_int)
+            str_ = f'{str(time.hour).zfill(2)}:{str(time.minute).zfill(2)}:{str(time.second).zfill(2)}'
+        except TypeError:
+            str_ = 'none'
         return str_
 
     def play(self):
@@ -98,6 +102,8 @@ class PlayerLayout(BoxLayout):
         self.sound.stop()
         self.sound.seek(0)
         self.pos_int = 0
+
+        # TODO: unscheduling with sound_vlc sometimes does not work
         Clock.unschedule(self.scheduled_job1)
         Clock.unschedule(self.scheduled_job2)
 
@@ -131,9 +137,14 @@ class PlayerLayout(BoxLayout):
         try:
             saved_progress = self.ini.read(self.progress_file)['pos_int']
             print('seeking to saved progress')
+
+            # hack for not seekable media in stopped state
+            self.sound._saved_progress = saved_progress
             self.sound.seek(saved_progress)
         except KeyError:
             print('progress not saved')
+        except ZeroDivisionError:
+            print('media probably in not seekable state')
 
     def goto_saved_pos(self):
         print('going to saved position')
@@ -143,6 +154,12 @@ class PlayerLayout(BoxLayout):
         print('overwriting saved position by current')
         self.ini.write(self.progress_file, {'pos_int': self.pos_int})
         print('saving progress', self.pos_int)
+
+    def load_sound(self, file_name):
+        self.file_name = file_name
+        # a = SoundLoader.register(sound_vlc.SoundVlc)  #
+        # print(a)
+        self.sound = SoundLoader.load(file_name)
 
 
 class FileChooserPopup(BoxLayout):
@@ -211,8 +228,7 @@ class MainLayout(FloatLayout):
 
     def return_to_player(self, file_name):
         print('Returning to player')
-        self.player_layout.file_name = file_name
-        self.player_layout.sound = SoundLoader.load(file_name)
+        self.player_layout.load_sound(file_name)
         self.remove_widget(self.file_select_layout)
         self.add_widget(self.player_layout)
 
@@ -224,7 +240,14 @@ class MainLayout(FloatLayout):
 
 class AudioPlayer(App):
     def __init__(self):
+        kivy_options_mod = list(kivy.kivy_options['audio'])
+        kivy_options_mod.append('vlc')
+        kivy.kivy_options['audio'] = tuple(kivy_options_mod)
+        audio_libs = [('vlc', 'sound_vlc')]
+        libs_loaded = core_register_libs('audio', audio_libs, base='kivy_')
+        print('audio libs loaded: ', libs_loaded)
         super().__init__()
+
         print('--------------')
         # overrides default kivy 1.10.1 user_data_dir creation strategy
         # which creates data_dir in /data folder
