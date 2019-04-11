@@ -201,6 +201,7 @@ class MainLayout(FloatLayout):
             'icon_size': 48,
             'font_scale': 1,
             'file_sort': '',
+            'sound_class': 'default',
         }
 
         loaded_config = self.ini.read(path.join(self.config_dir, 'config.json'))
@@ -214,6 +215,7 @@ class MainLayout(FloatLayout):
         self.configuration = {**default_config, **loaded_config}
         self.player_layout = PlayerLayout(**self.configuration)
         self.file_select_layout = FileChooserPopup(**self.configuration)
+        self.load_sound_class(**self.configuration)
 
         if self.configuration['last_file'] != '':
             # self.add_widget(self.player_layout)
@@ -237,17 +239,24 @@ class MainLayout(FloatLayout):
         self.configuration['last_file'] = file_name
         self.ini.write(path.join(self.config_dir, 'config.json'), self.configuration)
 
+    def load_sound_class(self, **kwargs):
+        if kwargs['sound_class'] == 'vlc':
+            '''
+            kivy_options_mod = list(kivy.kivy_options['audio'])
+            kivy_options_mod.append('vlc')
+            kivy.kivy_options['audio'] = tuple(kivy_options_mod)
+            audio_libs = [('vlc', 'sound_vlc')]
+            libs_loaded = core_register_libs('audio', audio_libs, base='kivy_')
+            print('audio libs loaded: ', libs_loaded)
+            '''
+            SoundLoader._classes = []
+            from kivy_.audio import sound_vlc
+            print('SoundLoader._classes: ', SoundLoader._classes)
+
 
 class AudioPlayer(App):
     def __init__(self):
-        kivy_options_mod = list(kivy.kivy_options['audio'])
-        kivy_options_mod.append('vlc')
-        kivy.kivy_options['audio'] = tuple(kivy_options_mod)
-        audio_libs = [('vlc', 'sound_vlc')]
-        libs_loaded = core_register_libs('audio', audio_libs, base='kivy_')
-        print('audio libs loaded: ', libs_loaded)
         super().__init__()
-
         print('--------------')
         # overrides default kivy 1.10.1 user_data_dir creation strategy
         # which creates data_dir in /data folder
