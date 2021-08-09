@@ -9,7 +9,7 @@ kivy.deps.glew==0.1.10
 kivy.deps.sdl2==0.1.18
 Pygments==2.3.1
 pypiwin32==223
-pywin32==224
+pywin32==301
 requests==2.21.0
 urllib3==1.24.1
 ffpyplayer==4.1.0
